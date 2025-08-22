@@ -1,103 +1,300 @@
-import Image from "next/image";
+"use client";
+import { useEffect, useState, useMemo } from "react";
+import Modal from "./components/Modal";
+import UserForm from "./components/userForm";
+import UserEditForm from "./components/editarUsuarioForm";
+import UserDetail from "./components/modalDetalle";
+import { FaEye, FaEdit, FaTrash } from "react-icons/fa";
 
-export default function Home() {
+type User = {
+  id: string;
+  title: string;
+  firstName: string;
+  lastName: string;
+  picture: string;
+  email: string;
+  gender?: string;
+  dateOfBirth?: string;
+  phone?: string;
+};
+
+type Paged<T> = {
+  data: T[];
+  total: number;
+  page: number;
+  limit: number;
+};
+
+export default function HomePage() {
+  const [users, setUsers] = useState<User[]>([]);
+  const [page, setPage] = useState(0);
+  const [limit, setLimit] = useState(6);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [query, setQuery] = useState("");
+
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [showCreate, setShowCreate] = useState(false);
+  const [editingUser, setEditingUser] = useState<User | null>(null);
+
+  const titleEs: Record<string, string> = {
+    mr: "Sr.",
+    ms: "Sra.",
+    mrs: "Sra.",
+    miss: "Srta.",
+    dr: "Dr./Dra.",
+  };
+
+  async function load() {
+    setLoading(true);
+    try {
+      const res = await fetch(
+        `https://dummyapi.io/data/v1/user?page=${page}&limit=${limit}`,
+        { headers: { "app-id": "63473330c1927d386ca6a3a5" } }
+      );
+      const data: Paged<User> = await res.json();
+
+      // 🔥 Invertimos el orden para que los más nuevos queden arriba
+      setUsers(data.data.reverse());
+      setTotal(data.total);
+    } catch (err) {
+      console.error("Error cargando usuarios", err);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    load();
+  }, [page, limit]);
+
+  const filtered = useMemo(() => {
+    const q = query.toLowerCase().trim();
+    if (!q) return users;
+    return users.filter(
+      (u) =>
+        `${u.firstName} ${u.lastName}`.toLowerCase().includes(q) ||
+        (u.email || "").toLowerCase().includes(q)
+    );
+  }, [users, query]);
+
+  async function createUser(data: Partial<User>) {
+    try {
+      if (!data.firstName || !data.lastName || !data.email) {
+        alert("Debes llenar nombre, apellido y email.");
+        return;
+      }
+
+      const res = await fetch("https://dummyapi.io/data/v1/user/create", {
+        method: "POST",
+        headers: {
+          "app-id": "63473330c1927d386ca6a3a5",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!res.ok) {
+        const errText = await res.text();
+        throw new Error(errText || "Error en la creación del usuario");
+      }
+
+      setShowCreate(false);
+      load();
+    } catch (err) {
+      console.error("Error creando usuario", err);
+      alert("No se pudo crear el usuario. Revisa la consola.");
+    }
+  }
+
+  async function updateUser(id: string, data: Partial<User>) {
+    try {
+      const res = await fetch(`https://dummyapi.io/data/v1/user/${id}`, {
+        method: "PUT",
+        headers: {
+          "app-id": "63473330c1927d386ca6a3a5",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!res.ok) {
+        const errText = await res.text();
+        throw new Error(errText || "Error actualizando usuario");
+      }
+
+      setEditingUser(null);
+      load();
+    } catch (err) {
+      console.error("Error actualizando usuario", err);
+      alert("No se pudo actualizar el usuario. Revisa la consola.");
+    }
+  }
+
+  async function deleteUser(id: string) {
+    if (!confirm("¿Seguro que deseas eliminar este usuario?")) return;
+    try {
+      const res = await fetch(`https://dummyapi.io/data/v1/user/${id}`, {
+        method: "DELETE",
+        headers: { "app-id": "63473330c1927d386ca6a3a5" },
+      });
+
+      if (!res.ok) {
+        const errText = await res.text();
+        throw new Error(errText || "Error eliminando usuario");
+      }
+
+      load();
+    } catch (err) {
+      console.error("Error eliminando usuario", err);
+      alert("No se pudo eliminar el usuario.");
+    }
+  }
+
+  const totalPages = Math.ceil(total / limit);
+
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <main className="mx-auto max-w-6xl p-4 sm:p-6">
+      {/* Header */}
+      <header className="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+        <h1 className="text-2xl font-bold">Listado de usuarios</h1>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2 w-full sm:w-auto">
+          <input
+            type="text"
+            placeholder="Buscar por nombre o email"
+            className="w-full sm:w-64 rounded-xl border px-3 py-2 text-sm"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+          <button
+            onClick={() => setShowCreate(true)}
+            className="rounded bg-green-600 px-4 py-2 text-white hover:bg-green-700 w-full sm:w-auto"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+            Crear Usuario
+          </button>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+      </header>
+
+      {/* Tabla */}
+      {loading && <p>Cargando...</p>}
+
+      <div className="overflow-x-auto rounded-[15px] border border-gray-200 dark:border-gray-700 shadow-sm">
+        <table className="min-w-full border border-gray-200 dark:border-gray-700 text-sm sm:text-base">
+          <thead className="bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100">
+            <tr>
+              <th className="p-2 text-left">Id</th>
+              <th className="p-2 text-left">Nombres y apellidos</th>
+              <th className="p-2 text-left">Foto</th>
+              <th className="p-2 text-center">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filtered.map((u) => (
+              <tr key={u.id} className="border-t">
+                <td className="p-2 max-w-[80px] sm:max-w-none text-ellipsis overflow-hidden break-words">
+                  <div
+                    className="break-words overflow-hidden sm:overflow-visible sm:whitespace-normal"
+                    style={{
+                      display: "-webkit-box",
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: "vertical" as any,
+                    }}
+                    title={u.id}
+                  >
+                    {u.id}
+                  </div>
+                </td>
+
+
+                <td className="p-2">
+                  {titleEs[u.title?.toLowerCase() || ""]} {u.firstName} {u.lastName}
+                </td>
+
+                <td className="p-2">
+                  <img
+                    src={u.picture}
+                    alt={`${u.firstName} ${u.lastName}`}
+                    className="h-8 w-8 sm:h-12 sm:w-12 rounded-full"
+                  />
+                </td>
+
+                <td className="p-2">
+                  <div className="flex justify-center items-center gap-2">
+                    <button
+                      onClick={() => setSelectedUser(u)}
+                      title="Ver usuario"
+                      className="flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-blue-500 text-white hover:bg-blue-600"
+                    >
+                      <FaEye className="w-3 h-3 sm:w-4 sm:h-4" />
+                    </button>
+
+                    <button
+                      onClick={() => setEditingUser(u)}
+                      title="Editar usuario"
+                      className="flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-orange-500 text-white hover:bg-orange-600"
+                    >
+                      <FaEdit className="w-3 h-3 sm:w-4 sm:h-4" />
+                    </button>
+
+                    <button
+                      onClick={() => deleteUser(u.id)}
+                      title="Eliminar usuario"
+                      className="flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-red-500 text-white hover:bg-red-600"
+                    >
+                      <FaTrash className="w-3 h-3 sm:w-4 sm:h-4" />
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Paginación */}
+      <div className="mt-4 flex flex-col sm:flex-row items-center gap-2 sm:gap-4">
+        <button
+          onClick={() => setPage((p) => Math.max(0, p - 1))}
+          disabled={page === 0}
+          className="rounded border px-3 py-1 disabled:opacity-50 w-full sm:w-auto"
         >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+          Anterior
+        </button>
+
+        <span className="text-sm sm:text-base">
+          Página {page + 1} de {Math.max(totalPages, 1)}
+        </span>
+
+        <button
+          onClick={() => setPage((p) => Math.min(p + 1, Math.max(totalPages, 1) - 1))}
+          disabled={page + 1 >= totalPages}
+          className="rounded border px-3 py-1 disabled:opacity-50 w-full sm:w-auto"
         >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
+          Siguiente
+        </button>
+      </div>
+
+      {/* Modales */}
+      <Modal open={!!selectedUser} onClose={() => setSelectedUser(null)} title="Detalle de usuario">
+        {selectedUser && (
+          <UserDetail user={{ id: selectedUser.id }} onClose={() => setSelectedUser(null)} />
+        )}
+      </Modal>
+
+      <Modal open={showCreate} onClose={() => setShowCreate(false)} title="Crear Usuario">
+        <UserForm onSubmit={createUser} onCancel={() => setShowCreate(false)} />
+      </Modal>
+
+      <Modal open={!!editingUser} onClose={() => setEditingUser(null)} title="Editar Usuario">
+        {editingUser && (
+          <UserEditForm
+            user={{ id: editingUser.id }}
+            onSubmit={updateUser}
+            onCancel={() => setEditingUser(null)}
           />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+        )}
+      </Modal>
+    </main>
   );
 }
