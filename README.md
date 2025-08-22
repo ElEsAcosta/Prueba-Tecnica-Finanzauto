@@ -1,38 +1,65 @@
-# Prueba-T-cnica-Finanzauto
-Realización prueba técnica Finanzauto por parte de Ángel Steban Acosta Daza
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# User Management App
 
-## Getting Started
+Aplicación en **Next.js 13 (App Router)** para gestión de usuarios utilizando la API pública de [DummyAPI](https://dummyapi.io/).  
+Permite **crear, listar, editar, eliminar y ver en detalle** usuarios de manera sencilla.
 
-First, run the development server:
+## 🚀 Tecnologías usadas
+- [Next.js 13](https://nextjs.org/) con App Router
+- [React](https://reactjs.org/)
+- [TypeScript](https://www.typescriptlang.org/)
+- [Tailwind CSS](https://tailwindcss.com/) para estilos
+- [DummyAPI](https://dummyapi.io/) como backend de ejemplo
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## 📂 Estructura principal
+```
+src/
+ ├─ app/
+ │   ├─ layout.tsx       # Layout principal
+ │   ├─ page.tsx         # Página principal (tabla de usuarios)
+ │   ├─ globals.css      # Estilos globales
+ │   └─ components/
+ │       ├─ Modal.tsx
+ │       ├─ UserForm.tsx
+ │       ├─ editarUsuarioForm.tsx
+ │       ├─ modalDetalle.tsx
+ │       └─ ...
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## ⚙️ Configuración inicial
+1. Clona el repositorio:
+   ```bash
+   git clone https://github.com/tu-usuario/tu-repo.git
+   cd tu-repo
+   ```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+2. Instala dependencias:
+   ```bash
+   npm install
+   ```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+3. Inicia el proyecto:
+   ```bash
+   npm run dev
+   ```
 
-## Learn More
+4. Abre en tu navegador:
+   ```
+   http://localhost:3000
+   ```
 
-To learn more about Next.js, take a look at the following resources:
+## ✨ Funcionalidades
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Listado de usuarios con paginación
+Crear usuario
+Editar usuario
+Eliminar usuario
+Ver detalle de usuario
+Validaciones en formularios
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 📝 Notas
+- Este proyecto está pensado como **demo / práctica** para consumir una API REST desde Next.js.
+- Si el API devuelve **error 400** al crear/editar, probablemente falten campos requeridos.
 
-## Deploy on Vercel
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+👨‍💻 Autor: Angel Steban Acosta Daza 
+📧 Contacto: stebandaza11@gmail.com
