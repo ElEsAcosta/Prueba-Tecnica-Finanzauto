@@ -28,7 +28,7 @@ type Paged<T> = {
 export default function HomePage() {
   const [users, setUsers] = useState<User[]>([]);
   const [page, setPage] = useState(0);
-  const [limit, setLimit] = useState(6);
+  const [limit] = useState(6); // removed setLimit porque no se usaba
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
   const [query, setQuery] = useState("");
@@ -45,27 +45,34 @@ export default function HomePage() {
     dr: "Dr./Dra.",
   };
 
-  async function load() {
-    setLoading(true);
-    try {
-      const res = await fetch(
-        `https://dummyapi.io/data/v1/user?page=${page}&limit=${limit}`,
-        { headers: { "app-id": "63473330c1927d386ca6a3a5" } }
-      );
-      const data: Paged<User> = await res.json();
-
-      // 🔥 Invertimos el orden para que los más nuevos queden arriba
-      setUsers(data.data.reverse());
-      setTotal(data.total);
-    } catch (err) {
-      console.error("Error cargando usuarios", err);
-    } finally {
-      setLoading(false);
-    }
-  }
-
+  // fetch ahora dentro de useEffect para evitar dependencias faltantes
   useEffect(() => {
-    load();
+    let mounted = true;
+    async function fetchUsers() {
+      setLoading(true);
+      try {
+        const res = await fetch(
+          `https://dummyapi.io/data/v1/user?page=${page}&limit=${limit}`,
+          { headers: { "app-id": "63473330c1927d386ca6a3a5" } }
+        );
+        const data: Paged<User> = await res.json();
+
+        // Invertimos sin mutar la referencia original
+        if (mounted) {
+          setUsers([...data.data].reverse());
+          setTotal(data.total);
+        }
+      } catch (err) {
+        console.error("Error cargando usuarios", err);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    }
+
+    fetchUsers();
+    return () => {
+      mounted = false;
+    };
   }, [page, limit]);
 
   const filtered = useMemo(() => {
@@ -100,10 +107,26 @@ export default function HomePage() {
       }
 
       setShowCreate(false);
-      load();
+      // recargar página actual
+      setPage(0); // opcional: volver a primera página si quieres ver el nuevo arriba
     } catch (err) {
       console.error("Error creando usuario", err);
       alert("No se pudo crear el usuario. Revisa la consola.");
+    } finally {
+      // forzamos recarga de lista
+      // load() estaba antes; aquí hacemos fetch llamando al efecto: incrementar page momentáneamente es una opción,
+      // pero mejor simplemente re-fetch directamente:
+      try {
+        const res = await fetch(
+          `https://dummyapi.io/data/v1/user?page=${page}&limit=${limit}`,
+          { headers: { "app-id": "63473330c1927d386ca6a3a5" } }
+        );
+        const data: Paged<User> = await res.json();
+        setUsers([...data.data].reverse());
+        setTotal(data.total);
+      } catch (e) {
+        console.error("Error recargando lista tras crear:", e);
+      }
     }
   }
 
@@ -124,7 +147,14 @@ export default function HomePage() {
       }
 
       setEditingUser(null);
-      load();
+      // recargar lista
+      const ref = await fetch(
+        `https://dummyapi.io/data/v1/user?page=${page}&limit=${limit}`,
+        { headers: { "app-id": "63473330c1927d386ca6a3a5" } }
+      );
+      const refreshed: Paged<User> = await ref.json();
+      setUsers([...refreshed.data].reverse());
+      setTotal(refreshed.total);
     } catch (err) {
       console.error("Error actualizando usuario", err);
       alert("No se pudo actualizar el usuario. Revisa la consola.");
@@ -144,7 +174,14 @@ export default function HomePage() {
         throw new Error(errText || "Error eliminando usuario");
       }
 
-      load();
+      // recargar
+      const ref = await fetch(
+        `https://dummyapi.io/data/v1/user?page=${page}&limit=${limit}`,
+        { headers: { "app-id": "63473330c1927d386ca6a3a5" } }
+      );
+      const refreshed: Paged<User> = await ref.json();
+      setUsers([...refreshed.data].reverse());
+      setTotal(refreshed.total);
     } catch (err) {
       console.error("Error eliminando usuario", err);
       alert("No se pudo eliminar el usuario.");
@@ -192,20 +229,12 @@ export default function HomePage() {
           <tbody>
             {filtered.map((u) => (
               <tr key={u.id} className="border-t">
-                <td className="p-2 max-w-[80px] sm:max-w-none text-ellipsis overflow-hidden break-words">
-                  <div
-                    className="break-words overflow-hidden sm:overflow-visible sm:whitespace-normal"
-                    style={{
-                      display: "-webkit-box",
-                      WebkitLineClamp: 2,
-                      WebkitBoxOrient: "vertical" as any,
-                    }}
-                    title={u.id}
-                  >
+                <td className="p-2 max-w-[80px] sm:max-w-none overflow-hidden break-words">
+                  {/* truncamos en móvil con line-clamp, en desktop se muestra completo */}
+                  <div className="line-clamp-2 break-words overflow-hidden sm:overflow-visible sm:whitespace-normal" title={u.id}>
                     {u.id}
                   </div>
                 </td>
-
 
                 <td className="p-2">
                   {titleEs[u.title?.toLowerCase() || ""]} {u.firstName} {u.lastName}

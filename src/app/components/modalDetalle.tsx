@@ -19,6 +19,20 @@ type UserDetailProps = {
     onClose: () => void;
 };
 
+// Diccionarios de traducción
+const titleMap: Record<string, string> = {
+    mr: "Sr.",
+    ms: "Sra.",
+    miss: "Srta.",
+    mrs: "Sra.",
+};
+
+const genderMap: Record<string, string> = {
+    male: "Masculino",
+    female: "Femenino",
+    other: "Otro",
+};
+
 export default function UserDetail({ user, onClose }: UserDetailProps) {
     const [detail, setDetail] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
@@ -64,14 +78,13 @@ export default function UserDetail({ user, onClose }: UserDetailProps) {
                 </div>
             </div>
 
-
             {/* Campos */}
             <div className="grid gap-3 text-sm">
                 <Field label="Id" value={detail.id} />
-                <Field label="Título" value={detail.title} />
+                <Field label="Título" value={titleMap[detail.title] || detail.title || "—"} />
                 <Field label="Nombres" value={detail.firstName} />
                 <Field label="Apellidos" value={detail.lastName} />
-                <Field label="Género" value={detail.gender || "—"} />
+                <Field label="Género" value={detail.gender ? genderMap[detail.gender] || detail.gender : "—"} />
                 <Field
                     label="Fecha de nacimiento"
                     value={detail.dateOfBirth ? detail.dateOfBirth.slice(0, 10) : "—"}

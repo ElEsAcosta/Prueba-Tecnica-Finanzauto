@@ -18,7 +18,7 @@ export default function UserForm({
   onCancel,
 }: {
   initial?: Partial<UserPayload>;
-  onSubmit: (data: UserPayload) => Promise<void>; // ahora devolvemos void, no Response
+  onSubmit: (data: UserPayload) => Promise<void>;
   onCancel: () => void;
 }) {
   const [form, setForm] = useState<UserPayload>({
@@ -70,8 +70,12 @@ export default function UserForm({
         phone: "",
       });
       onCancel();
-    } catch (err: any) {
-      alert(`❌ Error: ${err?.message || "No se pudo guardar el usuario"}`);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        alert(`❌ Error: ${err.message}`);
+      } else {
+        alert("❌ Error desconocido al guardar el usuario.");
+      }
     } finally {
       setSubmitting(false);
     }
