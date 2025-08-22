@@ -34,12 +34,13 @@ Permite **crear, listar, editar, eliminar y ver en detalle** usuarios de manera 
 
 ## ✨ Funcionalidades
 
-Listado de usuarios con paginación
-Crear usuario
-Editar usuario
-Eliminar usuario
-Ver detalle de usuario
-Validaciones en formularios
+- Listado de usuarios con paginación
+- Barra de busqueda por nombre de usuario
+- Crear usuario
+- Editar usuario
+- Eliminar usuario
+- Ver detalle de usuario
+- Validaciones en formularios
 
 ## 📝 Notas
 - Este proyecto está pensado como **demo / práctica** para consumir una API REST desde Next.js.
