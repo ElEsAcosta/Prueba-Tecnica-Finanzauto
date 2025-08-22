@@ -13,8 +13,7 @@ Permite **crear, listar, editar, eliminar y ver en detalle** usuarios de manera 
 ## ⚙️ Configuración inicial
 1. Clona el repositorio:
    ```bash
-   git clone https://github.com/tu-usuario/tu-repo.git
-   cd tu-repo
+   git clone https://github.com/ElEsAcosta/Prueba-Tecnica-Finanzauto
    ```
 
 2. Instala dependencias:
