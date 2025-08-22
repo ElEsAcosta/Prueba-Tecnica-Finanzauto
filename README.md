@@ -1,4 +1,4 @@
-# User Management App
+# Prueba tecnica Finanzauto
 
 Aplicación en **Next.js 15.5.0 (App Router)** para gestión de usuarios utilizando la API pública de [DummyAPI](https://dummyapi.io/).  
 Permite **crear, listar, editar, eliminar y ver en detalle** usuarios de manera sencilla.
