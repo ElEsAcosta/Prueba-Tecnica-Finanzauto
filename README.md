@@ -1,29 +1,14 @@
 # User Management App
 
-Aplicación en **Next.js 13 (App Router)** para gestión de usuarios utilizando la API pública de [DummyAPI](https://dummyapi.io/).  
+Aplicación en **Next.js 15.5.0 (App Router)** para gestión de usuarios utilizando la API pública de [DummyAPI](https://dummyapi.io/).  
 Permite **crear, listar, editar, eliminar y ver en detalle** usuarios de manera sencilla.
 
 ## 🚀 Tecnologías usadas
-- [Next.js 13](https://nextjs.org/) con App Router
-- [React](https://reactjs.org/)
-- [TypeScript](https://www.typescriptlang.org/)
-- [Tailwind CSS](https://tailwindcss.com/) para estilos
-- [DummyAPI](https://dummyapi.io/) como backend de ejemplo
-
-## 📂 Estructura principal
-```
-src/
- ├─ app/
- │   ├─ layout.tsx       # Layout principal
- │   ├─ page.tsx         # Página principal (tabla de usuarios)
- │   ├─ globals.css      # Estilos globales
- │   └─ components/
- │       ├─ Modal.tsx
- │       ├─ UserForm.tsx
- │       ├─ editarUsuarioForm.tsx
- │       ├─ modalDetalle.tsx
- │       └─ ...
-```
+- [Next.js 15.5.0]
+- [React]
+- [TypeScript]
+- [Tailwind CSS]
+- [DummyAPI]
 
 ## ⚙️ Configuración inicial
 1. Clona el repositorio:
